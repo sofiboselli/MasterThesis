@@ -1,0 +1,10 @@
+function [result,stats1,stats2] = ppredict(model,stimtest,resptest,mastest)
+
+[r,stats1] = mTRFevaluate(stimtest,resptest,model,'verbose',false);
+[r,stats2] = mTRFevaluate(mastest,resptest,model,'verbose',false);
+
+[result,d] = mTRFattnevaluate(stats1.r,stats2.r);
+
+result = result*100;
+
+end
