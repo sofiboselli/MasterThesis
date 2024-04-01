@@ -31,7 +31,7 @@ class EEG_Dataset(Dataset):
         self.fs = fs
         self.path = path
 
-        self.win_len = (4224 - int(self.seconds*self.fs)) // int(self.seconds*self.fs*self.overlap)
+        self.win_len = (int(self.fs*33) - int(self.seconds*self.fs)) // int(self.seconds*self.fs*self.overlap)
         self.times = self.seconds*self.fs
 
         self.files = files
@@ -45,21 +45,21 @@ class EEG_Dataset(Dataset):
         sub = index//(self.win_len)
         ind = int(index%(self.win_len))
         self.data = np.load(self.files[sub])
-        self.eeg = self.data['EEG'][:64]
-        self.att = np.expand_dims(self.data['attended'],0)
-        self.mas = np.expand_dims(self.data['masker'],0)
+        self.eeg = self.data['EEG']
+        self.att = self.data['attended']
+        self.mas = self.data['masker']
 
-        '''
+        
 
         self.eeg = (self.eeg - self.eeg.mean(axis=1,keepdims=True))/self.eeg.std(axis=1,keepdims=True)
-        self.att = np.expand_dims((self.att - self.att.mean(axis=0,keepdims=True))/self.att.std(axis=0,keepdims=True),0)
-        self.mas = np.expand_dims((self.mas - self.mas.mean(axis=0,keepdims=True))/self.mas.std(axis=0,keepdims=True),0)
+        self.att = (self.att - self.att.mean(axis=1,keepdims=True))/self.att.std(axis=1,keepdims=True)
+        self.mas = (self.mas - self.mas.mean(axis=1,keepdims=True))/self.mas.std(axis=1,keepdims=True)
 
-        '''
+    
                 
-        win_eeg = torch.from_numpy(np.reshape(window_data(self.eeg,int(self.seconds*self.fs),int(self.seconds*self.fs*self.overlap)),(self.win_len,64,self.times))[ind]).float()
-        win_att = torch.from_numpy(np.reshape(window_data(self.att,int(self.seconds*self.fs),int(self.seconds*self.fs*self.overlap)),(self.win_len,self.times))[ind]).float()
-        win_mas = torch.from_numpy(np.reshape(window_data(self.mas,int(self.seconds*self.fs),int(self.seconds*self.fs*self.overlap)),(self.win_len,self.times))[ind]).float()
+        win_eeg = torch.from_numpy(np.reshape(window_data(self.eeg,int(self.seconds*self.fs),int(self.seconds*self.fs*self.overlap)),(self.win_len,self.eeg.shape[0],self.times))[ind]).float()
+        win_att = torch.from_numpy(np.reshape(window_data(self.att,int(self.seconds*self.fs),int(self.seconds*self.fs*self.overlap)),(self.win_len,self.att.shape[0],self.times))[ind]).float()
+        win_mas = torch.from_numpy(np.reshape(window_data(self.mas,int(self.seconds*self.fs),int(self.seconds*self.fs*self.overlap)),(self.win_len,self.mas.shape[0],self.times))[ind]).float()
 
 
         

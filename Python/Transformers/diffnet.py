@@ -210,14 +210,17 @@ class EEG_Conformer(nn.Module):
         super().__init__()
 
         self.confblock = nn.ModuleList([Conformer_block(inp=inp,kernel_size=kernel_size,nheads=nheads,dropout=dropout) for _ in range(nblock)])
-        self.lin = nn.Linear(inp,1)
+        self.conv = nn.Conv1d(64,48,kernel_size=5,stride=3)
+        self.conv2 = nn.Conv1d(48,32,kernel_size=15,stride=2)
     
     def forward(self,x):
         x = x.transpose(1,2)
         for conf in self.confblock:
             x = conf(x)
-        x = self.lin(x)
-        return x.squeeze(-1)
+        x = x.transpose(1,2)
+        x = self.conv(x)
+        x = self.conv2(x)
+        return x
 
 
     
